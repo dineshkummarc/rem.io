@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html manifest="self.manifest">
+<head>
+  <title>Callout</title>
+  <!--
+  @rem here - I wrote this after #fullfrontalconf 2011 and @natbat 
+  helped me notify speakers their time was coming to an end with 
+  a native app called "Shoutit".  I went to buy it, but for £2.50
+  (or so), and what boiled down to colour and numbers, I figured
+  I could write it faster. 1 hour later - and this is what I've got.
+  Stores colour prefs, shame it doesn't jump TIME, 1, 5, 15 - but
+  the input[range] is nice and mobile friendly.
+  Make sure you save it to your home screen for a fullscreen 
+  effect.
+
+  Hope this helps someone else.
+
+  - @rem
+
+  -->
+  <meta id="meta" name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <style>
+    * {
+      margin: 0; 
+      padding: 0;
+      -webkit-touch-callout: none; /* prevent callout to copy image, etc when tap to hold */
+      -webkit-text-size-adjust: none; /* prevent webkit from resizing text to fit */
+      /* make transparent link selection, adjust last value opacity 0 to 1.0 */
+      -webkit-tap-highlight-color: rgba(0,0,0,1.0); 
+      -webkit-user-select: none; /* prevent copy paste, to allow, change 'none' to 'text' */
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      -webkit-gradient(
+        linear,
+        left top,
+        left bottom,
+        color-stop(0, #fefefe),
+        color-stop(0.49, #dddddd),
+        color-stop(0.51, #d1d1d1),
+        color-stop(1, #a1a1a1)
+      );
+      background-repeat: no-repeat;
+      background-position: 50%;
+    }
+
+    html, body { height: 100%; min-height: 320px; overflow: hidden; }
+    input { width: 20px; height: 100%; min-height: 200px; -webkit-appearance: slider-vertical; }
+    .controls { position: absolute; z-index: 1; top: 0; bottom: 0; opacity: 0; -webkit-transition: opacity 100ms ease-out; padding: 30px; }
+    .controls.time { right: 0; }
+    .controls.color { left: 0; }
+    .show .controls { opacity: 1; }
+    #callout { 
+      letter-spacing: -10px;
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      bottom: 0; 
+      height: 100%;
+      text-align: center;
+      color: #000; 
+      font-family: sans-serif; 
+      font-weight: bold; 
+      text-align: center; 
+
+      /* vertical align magic via flexible layouts */
+      display : box;
+      box-orient: vertical;
+      box-pack: center;
+      display : -moz-box;
+      -moz-box-orient: vertical;
+      -moz-box-pack: center;
+      display : -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-box-pack: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls color">
+    <input id=color type=range min=0 max=360 value=100>
+  </div>
+  <div id=callout>TIME</div>
+  <div class="controls time">
+    <input id=time type=range min=0 max=4 value=0>
+  </div>
+<script>
+  var body = document.body,
+      callout = document.getElementById('callout'),
+      time = document.getElementById('time'),
+      color = document.getElementById('color'),
+      touch = 'createTouch' in document,
+      text = [15, 10, 5, 1, 'TIME'],
+      useStorage = false;
+
+  /mobile/i.test(navigator.userAgent) && !location.hash && setTimeout(function () {
+    if (!pageYOffset) window.scrollTo(0, 1);
+  }, 1000);
+
+  try {
+    useStorage = 'localStorage' in window && window['localStorage'] !== null;
+  } catch(e) {}
+
+  callout['on' + (touch ? 'touchstart' : 'click')] = function (event) {
+    if (event.target.nodeName !== 'INPUT') {
+      var className = body.className;
+      body.className = className.indexOf('show') !== -1 ? '' : 'show';
+    }
+  };
+  
+  body.ontouchmove = function (event) {
+    return event.target.nodeName !== 'INPUT' ? false : true;
+  };
+
+  var setColor = color.oninput = function () {
+    body.style.backgroundColor = 'hsl(' + this.value + ',100%,50%)';
+    callout.style.textShadow = '0 1px 0 hsla(' + this.value + ',80%,100%,0.3)';
+    if (useStorage) localStorage.color = this.value;    
+  };
+
+  var setTime = time.oninput = function () {
+    var t = this.value;
+    if (useStorage) localStorage.time = this.value;    
+    callout.innerHTML = text[t];
+  };
+
+
+  if (useStorage) {
+    time.value = localStorage.time || 5,
+    color.value = localStorage.color || 100;
+  }
+
+  setTime.call(time);
+  setColor.call(color);
+
+  function fittext() {
+    var settings = {
+      'minFontSize' : Number.NEGATIVE_INFINITY,
+      'maxFontSize' : Number.POSITIVE_INFINITY
+    };
+
+  
+    var compressor = 0.25; // set the compressor
+    
+    // Resizer() resizes items based on the object width divided by the compressor * 10
+    var resizer = function () {
+     var fontSize = Math.max(Math.min(body.clientWidth / (compressor*10), parseFloat(settings.maxFontSize)), parseFloat(settings.minFontSize));
+      console.log(body.clientWidth / (compressor*10), parseFloat(settings.maxFontSize), parseFloat(settings.minFontSize));
+      callout.style.fontSize = fontSize + 'px';
+    };
+
+    // Call once to set.
+    resizer();
+
+    // Call on resize. Opera debounces their resize by default. 
+    window.onresize = resizer;
+
+  }
+
+  fittext();
+
+</script>
+</body>
+</html>
+
