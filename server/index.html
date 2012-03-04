@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html id="remio" lang="en">
+<head>
+  <meta charset="utf8">
+  <title>rem.io</title>
+  <style>
+  * { font-family: menlo, xenon2; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box }
+  header { padding: 20px; display: block; }
+  header > * { display: inline; }
+  h1 { font-size: 25px; }
+  h1 span { color: #bbb; }
+  h2 { font-size: 15px; color: #aaa;}
+  body { font-size: 15px; margin: 0; }
+  li { display: block; }
+  li[hidden] { display: none; }
+  section { background: #0097FE; border: 1px solid hsla(204, 100%, 40%, 0); border-radius: 10px; margin: 20px 50px; padding: 10px; position: relative; }
+  section h1 { position: absolute; right: 10px; margin: 0; text-align: right; color: hsla(204, 100%, 50%, 0.6); text-shadow: 0px -1px 0 hsl(204, 100%, 30%); margin-bottom: 8px; font-size: 20px; }
+  ul, ol { margin: 0; padding: 10px; background: #fff; border: 0; border-radius: 5px; }
+  a { background: #fff; font-size: 15px; line-height: 25px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; width: 100%; color: #333; text-decoration: none; padding: 3px; }
+  time { color: #bbb; position: absolute; right: 0;}
+
+  li a:hover, li a:nth-child(2) { color: #fff; background: hsl(204, 100%, 51%); }
+  li a:hover { box-sizing: content-box; margin-left: -71px; padding-left: 74px; padding-right: 68px; box-shadow: 0 1px 5px hsla(204, 100%, 30%, 0.9); position: relative; z-index: 1; }
+  a:hover time { color: #fff; padding-right: 71px; }
+
+  section form { height: 30px;}
+  input { border: 0; font-size: 16px; font-family: menlo; padding: 5px; background: hsla(204, 100%, 60%, 0); border-top-left-radius: 5px; border-top-right-radius: 5px; color: #fff; } 
+  input:focus, input:hover { background: hsl(204, 100%, 85%); color: #000; outline: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>rem<span>.io</span></h1>
+    <h2>Home of @rem's toys, bits and bobs</h2>
+  </header>
+
+  <section id="files">
+    <h1>Latest files</h1>
+    <form>
+      <input type="text" name="filter" id="filefilter" data-focuson="t" value="" autocomplete="off">
+      <input type="hidden" name="type" value="file">
+    </form>
+    <ul>
+      <% _.each(files, function (link) { %>
+      <li<% if (link.hidden === true) { %> hidden<% } %>><a tabindex="0" href="<%= link.href %>"><%= link.title %> <time datetime="<%= link.timestamp %>"><%= link.relative %></time> </a></li>
+      <% }); %>
+    </ul>
+  </section>
+
+  <section id="links">
+    <h1>Saved links</h1>
+    <form>
+      <input type="text" name="filter" id="linkfilter" data-focuson="l" autocomplete="off">
+      <input type="hidden" name="type" value="link">
+    </form>
+    <ol>
+      <% _.each(links, function (link) { %>
+      <li<% if (link.hidden === true) { %> hidden<% } %>><a tabindex="0" href="/link/<%= link.i %>"><span><%= link.i %>.</span> <%= link.title %><% if (link.title !== link.href) { %> (<%= link.href %>)<% } %></a></li>
+      <% }); %>
+    </ol>
+  </section>
+  <script>
+  var $ = function (expr, fn) {
+    each(document.querySelectorAll(expr), fn);
+  };
+
+  function each(collection, fn) {
+    [].forEach.call(collection, fn);
+  }
+
+  $('input[data-focuson]', function (input) {
+    var shortcut = input.dataset.focuson;
+    if (shortcut) {
+      if (shortcut === 'esc') shortcut = 27;
+      else shortcut = shortcut.toUpperCase().charCodeAt(0);
+      window.addEventListener('keydown', function (event) {
+        if (event.keyCode === shortcut && event.target.nodeName !== 'INPUT') {
+          input.focus();
+          event.preventDefault();
+        }
+      }, false);
+    }
+
+    var last = '',
+        items = input.form.parentNode.querySelectorAll('li');
+    input.addEventListener('keyup', function () {
+      var value = this.value.toLowerCase().trim();
+      if (value !== last && value) {
+        last = value;
+        each(items, function (item) {
+          item.hidden = item.textContent.toLowerCase().indexOf(value) === -1;
+        });
+      } else if (value === '') {
+        each(items, function (item) {
+          item.hidden = false;
+        });
+      }
+    }, false);
+  });
+  </script>
+</body>
+</html>
