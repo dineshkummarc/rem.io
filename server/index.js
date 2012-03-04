@@ -113,7 +113,6 @@ function routes(app) {
               title = href,
               timestamp = stat.mtime.toString(),
               hidden = i < (all.length - 10);
-          if (hidden) return;
           if (stat.isDirectory()) title += '/';
           files.push({ href: href, title: title, hidden: hidden, timestamp: timestamp, relative: relative(stat.mtime), mtime: stat.mtime });
         }));
