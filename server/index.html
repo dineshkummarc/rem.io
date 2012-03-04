@@ -71,10 +71,10 @@
   $('input[data-focuson]', function (input) {
     var shortcut = input.dataset.focuson;
     if (shortcut) {
-      if (shortcut === 'esc') shortcut = 27;
-      else shortcut = shortcut.toUpperCase().charCodeAt(0);
+      shortcut = shortcut.toUpperCase().charCodeAt(0);
       window.addEventListener('keydown', function (event) {
-        if (event.keyCode === shortcut && event.target.nodeName !== 'INPUT') {
+        console.log(event);
+        if (event.keyCode === shortcut && event.target.nodeName !== 'INPUT' && event.metaKey === false) {
           input.focus();
           event.preventDefault();
         }

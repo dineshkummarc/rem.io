@@ -19,7 +19,7 @@ var root = __dirname + '/../',
 // pretty sure this isn't the right way...
 fs.stat(root + 'links.txt', function (err, stat) {
   if (err) return;
-  fs.read(linksFile, new Buffer(stat.size), 0, stat.size, null, function (err, bytesread, buffer) {
+  if (stat.size) fs.read(linksFile, new Buffer(stat.size), 0, stat.size, null, function (err, bytesread, buffer) {
     var body = buffer.toString();
     _.chain(body.split('\n')).filter(function (line) {
       return !!line.trim().length;
@@ -148,7 +148,7 @@ function routes(app) {
     var href = req.headers.referer,
         title = req.query.title,
         hidden = false;
-
+console.error(href, req)
     save = function (title) {
       var i = links.length;
 
