@@ -111,21 +111,25 @@ function routes(app) {
         fs.stat(root + file, wait.until(function (err, stat) {
           var href = file,
               title = href,
-              timestamp = stat.mtime.toString(),
-              hidden = i < (all.length - 10);
-          if (hidden) return;
+              timestamp = stat.mtime.toString();
+              // hidden = i < (all.length - 10);
+
           if (stat.isDirectory()) title += '/';
-          files.push({ href: href, title: title, hidden: hidden, timestamp: timestamp, relative: relative(stat.mtime), mtime: stat.mtime });
+          files.push({ href: href, title: title, timestamp: timestamp, relative: relative(stat.mtime), mtime: stat.mtime });
         }));
       });
     }));
 
     wait.oncomplete = function () {
-      files = _.sortBy(files, function (file) { return -file.mtime.getTime() });
+      files = _.sortBy(files, function (file) { return file.mtime.getTime() });
+
+      _.each(files, function (file, i, all) {
+        file.hidden = i < (all.length - 10);
+      });
 
       template = _.template(fs.readFileSync(root + '/server/index.html').toString());
 
-      res.end(template({ files: files, links: links.slice().reverse() }));
+      res.end(template({ files: files.reverse(), links: links.slice().reverse() }));
     };
   });
 
@@ -148,7 +152,7 @@ function routes(app) {
     var href = req.headers.referer,
         title = req.query.title,
         hidden = false;
-console.error(href, req)
+
     save = function (title) {
       var i = links.length;
 
