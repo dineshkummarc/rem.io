@@ -3,12 +3,14 @@ var root = __dirname + '/../',
     _ = require('underscore'),
     router = require(root + '/router.js'),
     fs = require('fs'),
-    http = require('http'),
+    http = {
+      http: require('http'),
+      https: require('https')
+    },
     path = require('path'),
     parse = require('url').parse,
     exists = fs.exist || path.exist,
     connect = require('connect'), 
-    http = require('http'),
     corsRE = new RegExp('^/(images|uploads)/', 'i'),
     uploads = root + '/uploads',
     monthDict = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -148,9 +150,13 @@ function routes(app) {
   });
 
   app.get('/link/save', function (req, res) {
-    var href = req.headers.referer,
+    var href = req.headers.referer || req.query.url,
         title = req.query.title,
-        hidden = false;
+        hidden = false,
+        opts = parse(href),
+        proto = opts.protocol.substring(1);
+
+    console.log(opts);
 
     save = function (title) {
       var i = links.length;
@@ -169,7 +175,7 @@ function routes(app) {
     if (title) {
       save(title);
     } else {
-      http.get(parse(href), function(res) {
+      http[proto].get(parse(href), function(res) {
         var html = '';
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
@@ -212,7 +218,7 @@ var app = connect.createServer()
   .use(connect.bodyParser({ uploadDir: uploads }))
   .use(connect.query())
   .use(connect.favicon())
-  .use(connect.logger('tiny'))
+  .use(connect.logger())
   .use(router(routes))
   .use(connect.static(__dirname + '/../'))
   .use(connect.directory(__dirname + '/../'))
