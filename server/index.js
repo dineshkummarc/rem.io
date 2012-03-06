@@ -142,11 +142,12 @@ function routes(app) {
     } else {
       res.writeHead(302, {'Location': links[id].href });
     }
-    res.end('');
+    res.end();
   });
 
   app.get('/link', function (req, res) {
     res.writeHead(302, {'Location': links[links.length-1].href });
+    res.end();
   });
 
   app.get('/link/save', function (req, res) {
