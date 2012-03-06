@@ -154,9 +154,7 @@ function routes(app) {
         title = req.query.title,
         hidden = false,
         opts = parse(href),
-        proto = opts.protocol.substring(1);
-
-    console.log(opts);
+        proto = opts.protocol.indexOf('https') === 0 ? 'https' : 'http';
 
     save = function (title) {
       var i = links.length;
